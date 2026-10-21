@@ -42,14 +42,48 @@ class TestNMC(unittest.TestCase):
         assert xtr.shape[1] == self.x.shape[1]
         assert xts.shape[1] == self.x.shape[1]
 
+    def test_split_data_returns_disjoint_aligned_subsets(self):
+        x = np.arange(10).reshape(5, 2)
+        y = np.arange(5)
+
+        xtr, ytr, xts, yts = split_data(x, y, tr_fraction=0.5)
+
+        train_indices = {tuple(row) for row in xtr}
+        test_indices = {tuple(row) for row in xts}
+        all_indices = {tuple(row) for row in x}
+        assert xtr.shape[0] == 2
+        assert xts.shape[0] == 3
+        assert train_indices.isdisjoint(test_indices)
+        assert train_indices | test_indices == all_indices
+        assert all(np.array_equal(row, x[label]) for row, label in zip(xtr, ytr))
+        assert all(np.array_equal(row, x[label]) for row, label in zip(xts, yts))
+
     def test_fit(self):
         self.clf.fit(self.x, self.y)
         assert self.clf.centroids is not None
         assert self.clf.centroids.shape[0] == np.unique(self.y).size
         assert self.clf.centroids.shape[1] == self.x.shape[1]
 
+    def test_fit_computes_centroids_for_noncontiguous_labels(self):
+        x = np.array([[0.0, 2.0], [2.0, 4.0], [8.0, 10.0]])
+        y = np.array([2, 2, 7])
+
+        self.clf.fit(x, y)
+
+        np.testing.assert_array_equal(self.clf.class_labels, [2, 7])
+        np.testing.assert_allclose(self.clf.centroids, [[1.0, 3.0], [8.0, 10.0]])
+
     def test_predict(self):
         self.clf.fit(self.x, self.y)
         yc = self.clf.predict(self.x)
         assert yc.ndim == 1
         assert yc.shape[0] == self.x.shape[0]
+
+    def test_predict_returns_nearest_class_labels(self):
+        x = np.array([[0.0], [2.0], [10.0], [12.0]])
+        y = np.array([1, 1, 5, 5])
+        self.clf.fit(x, y)
+
+        predictions = self.clf.predict(np.array([[1.0], [11.0], [3.0]]))
+
+        np.testing.assert_array_equal(predictions, [1, 5, 1])
