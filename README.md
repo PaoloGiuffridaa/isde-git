@@ -28,6 +28,17 @@ By default the following libraries can be used:
 
 Change the `requirements.txt` file by adding the name of any new dependency if necessary.
 
+### Build the documentation
+
+Install the project dependencies, including Sphinx, and run the following
+command from the repository root:
+
+```sh
+sphinx-build -b html docs docs/build
+```
+
+Open `docs/build/index.html` to view the generated documentation.
+
 ### Workflow details:
 1. The team leader *only* should fork the current project and provide the 
  repository url to other team members. The team leader must also add other team members

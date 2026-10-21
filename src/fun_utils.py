@@ -4,20 +4,22 @@ import numpy as np
 
 def load_data(filename):
     """
-    Load data from a csv file
+    Load a labeled dataset from a CSV file.
+
+    The first CSV column is treated as the class label, and all remaining
+    columns are treated as features.
 
     Parameters
     ----------
-    filename : string
-        Filename to be loaded.
+    filename : str or path-like
+        Path to the CSV file to load.
 
     Returns
     -------
-    X : ndarray
-        the data matrix.
-
-    y : ndarray
-        the labels of each sample.
+    X : numpy.ndarray of shape (n_samples, n_features)
+        Feature matrix.
+    y : numpy.ndarray of shape (n_samples,)
+        Class label for each sample.
     """
     data = read_csv(filename)
     z = np.array(data)
@@ -30,8 +32,37 @@ def split_data(x, y, tr_fraction=0.5):
     """
     Split the data x, y into disjoint random training and test subsets.
 
-    The training set contains ``int(len(x) * tr_fraction)`` samples; the
-    remaining samples are assigned to the test set.
+    A single random permutation of sample indices is used to split features
+    and labels together, preserving their correspondence. The training set
+    contains ``int(len(x) * tr_fraction)`` samples; the remaining samples are
+    assigned to the test set.
+
+    Parameters
+    ----------
+    x : array-like of shape (n_samples, n_features)
+        Feature matrix.
+    y : array-like of shape (n_samples,)
+        Class labels corresponding to rows of ``x``.
+    tr_fraction : float, default=0.5
+        Fraction of samples assigned to the training set. Must be between
+        zero and one, inclusive.
+
+    Returns
+    -------
+    x_train : numpy.ndarray of shape (n_train, n_features)
+        Training features.
+    y_train : numpy.ndarray of shape (n_train,)
+        Training labels.
+    x_test : numpy.ndarray of shape (n_samples - n_train, n_features)
+        Test features.
+    y_test : numpy.ndarray of shape (n_samples - n_train,)
+        Test labels.
+
+    Raises
+    ------
+    ValueError
+        If the inputs have incompatible dimensions or lengths, or if
+        ``tr_fraction`` is not a number between zero and one.
     """
     x = np.asarray(x)
     y = np.asarray(y)
